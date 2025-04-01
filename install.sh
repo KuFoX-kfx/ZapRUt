@@ -1,5 +1,8 @@
 #!/bin/bash
 
+clear
+
+
 
 ### Init Functions
 
@@ -42,18 +45,12 @@ install_package_zypper() {
     sudo zypper refresh
     sudo zypper install -y git wget
 }
-# Flatpak (Universal Linux)
-install_package_flatpak() {
-    sudo flatpak update -y
-    sudo flatpak install -y flathub org.gitlab.GitLab git 
-    sudo flatpak install -y flathub org.gnu.wget wget
-}
+
 
 ## Check installed package manager
 check_package_manager() {
-    for package_manager in apk apt apt-get dnf pacman xbps yum zypper flatpak; do
+    for package_manager in apk apt apt-get dnf pacman xbps yum zypper; do
         if command -v "$package_manager" &> /dev/null; then
-            echo "$package_manager"
             return 0
         fi
     done
@@ -62,3 +59,45 @@ check_package_manager() {
 
 
 
+
+
+### Program
+
+## Check and if need install packages
+echo "INFO: Check installation 'git', 'wget' packages"
+if ! command -v wget &> /dev/null || ! command -v git &> /dev/null; then
+    echo "WARNING: Package 'git', 'wget' not found. Try install"
+
+    echo "INFO: Check installing package manager"
+    check_package_manager
+
+    if [ $? == 0 ]; then
+        echo "INFO: Found '$package_manager' package manager"
+    else
+        echo "ERROR: Package manager not found. Please install 'git', 'wget'"
+        exit 1
+    fi
+
+    if [ "$package_manager" == "apk" ]; then
+        install_package_apk
+    elif [ "$package_manager" == "apt" ]; then
+        install_package_apt
+    elif [ "$package_manager" == "apt-get" ]; then
+        install_package_aptget
+    elif [ "$package_manager" == "dnf" ]; then
+        install_package_dnf
+    elif [ "$package_manager" == "pacman" ]; then
+        install_package_pacman
+    elif [ "$package_manager" == "xbps" ]; then
+        install_package_xbps
+    elif [ "$package_manager" == "yum" ]; then
+        install_package_yum
+    elif [ "$package_manager" == "zypper" ]; then
+        install_package_zypper
+    else
+        echo "ERROR: Unknown error"
+        exit 1
+    fi
+else
+    echo "INFO: Package 'git', 'wget' found"
+fi
